@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Gaming Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #00ff87;
+            --secondary-color: #60efff;
+            --dark-bg: #000428;
+            --light-bg: #004e92;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg), var(--light-bg));
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* تحسينات التوافق مع الشاشات */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+            }
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* شريط العنوان المحسن */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.5);
+        }
+
+        /* قائمة الألعاب المحسنة */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            font-size: 0.8rem;
+            margin-top: auto;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        /* الشريط الجانبي المحسن */
+        .sidebar {
+            position: fixed;
+            right: -250px;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            transition: right 0.3s ease;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 50px;
+        }
+
+        /* لوحة التحكم بالأداء */
+        .performance-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .performance-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        /* مؤشر التحميل */
+        .loader {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+        }
+
+        .loader::after {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            animation: loading 1s ease infinite;
+        }
+
+        @keyframes loading {
+            0% { width: 0; }
+            50% { width: 50%; }
+            100% { width: 100%; }
+        }
+
+        /* تحسينات إضافية */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 1000;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            padding: 15px;
+            border-radius: 10px;
+            transform: translateY(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="loader" id="loader"></div>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Space Gaming Hub</h1>
+            <div class="header-actions">
+                <button class="btn tooltip" data-tooltip="تحسين أداء جميع الألعاب" onclick="toggleBoostMode()">
+                    وضع التحسين
+                </button>
+                <button class="btn" onclick="addGames()">إضافة ألعاب</button>
+            </div>
+        </div>
+
+        <div class="games-grid" id="gamesGrid"></div>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <button class="btn" onclick="takeScreenshot()">لقطة شاشة</button>
+            <button class="btn" onclick="startScreenRecording()">تسجيل الشاشة</button>
+            
+            <div class="performance-panel">
+                <h3>إعدادات الأداء</h3>
+                <div class="performance-option">
+                    <input type="checkbox" id="boostGraphics" checked>
+                    <label for="boostGraphics">تحسين الرسومات</label>
+                </div>
+                <div class="performance-option">
+                    <input type="checkbox" id="boostFPS" checked>
+                    <label for="boostFPS">تحسين معدل الإطارات</label>
+                </div>
+                <div class="performance-option">
+                    <input type="checkbox" id="reduceLag" checked>
+                    <label for="reduceLag">تقليل التأخير</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-toggle" onclick="toggleSidebar()">≡</div>
+    
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // تحسينات النظام
+        let boostMode = true;
+        let gamesData = {};
+
+        // إنشاء تأثير النجوم
+        function createStars() {
+            const stars = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.style.position = 'absolute';
+                star.style.width = '2px';
+                star.style.height = '2px';
+                star.style.background = '#fff';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animation = `float ${3 + Math.random() * 4}s infinite`;
+                stars.appendChild(star);
+            }
+        }
+
+        // إدارة الإشعارات
+        function showNotification(message, duration = 3000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+
+        // تبديل وضع التحسين
+        function toggleBoostMode() {
+            boostMode = !boostMode;
+            showNotification(`تم ${boostMode ? 'تفعيل' : 'تعطيل'} وضع تحسين الأداء`);
+            updateGamesPerformance();
+        }
+
+        // تحديث أداء الألعاب
+        function updateGamesPerformance() {
+            Object.keys(gamesData).forEach(gameId => {
+                const stats = gamesData[gameId].stats;
+                if (boostMode) {
+                    stats.fps *= 1.5;
+                    stats.quality *= 1.2;
+                } else {
+                    stats.fps /= 1.5;
+                    stats.quality /= 1.2;
+                }
+                updateGameCard(gameId);
+            });
+        }
+
+        // إضافة بطاقة لعبة
+        function addGameCard(gameId, gameName) {
+            if (!gamesData[gameId]) {
+                gamesData[gameId] = {
+                    name: gameName,
+                    stats: {
+                        fps: 60,
+                        quality: 100,
+                        playTime: 0,
+                        lastPlayed: new Date()
+                    }
+                };
+            }
+
+            const card = document.createElement('div');
+            card.className = 'game-card';
+            card.id = `game-${gameId}`;
+            updateGameCard(gameId, card);
+            document.getElementById('gamesGrid').appendChild(card);
+        }
+
+        // تحديث بطاقة لعبة
+        function updateGameCard(gameId, card = null) {
+            const gameData = gamesData[gameId];
+            const stats = gameData.stats;
+            
+            if (!card) {
+                card = document.getElementById(`game-${gameId}`);
+            }
+
+            card.innerHTML = `
+                <h3>${gameData.name}</h3>
+                <div class="game-stats">
+                    <div class="stat-item">FPS: ${Math.round(stats.fps)}</div>
+                    <div class="stat-item">الجودة: ${Math.round(stats.quality)}%</div>
+                    <div class="stat-item">وقت اللعب: ${Math.round(stats.playTime)}د</div>
+                    <div class="stat-item">آخر لعب: ${formatDate(stats.lastPlayed)}</div>
+                </div>
+            `;
+
+            card.onclick = () => launchGame(gameId);
+        }
+
+        // تشغيل لعبة
+        function launchGame(gameId) {
+            showNotification(`جاري تشغيل ${gamesData[gameId].name}...`);
+            // هنا يمكن إضافة منطق تشغيل اللعبة
+        }
+
+        // تنسيق التاريخ
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('ar-SA', {
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // إضافة الألعاب
+        function addGames() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = '.apk,.ipa';
+            input.onchange = function(e) {
+                showNotification(`تم إضافة ${e.target.files.length} لعبة`);
+                for (let file of e.target.files) {
+                    const gameId = Math.random().toString(36).substr(2, 9);
+                    addGameCard(gameId, file.name.replace(/\.[^/.]+$/, ""));
+                }
+            }
+            input.click();
+        }
+
+        // تهيئة التطبيق
+        window.onload = function() {
+            createStars();
+            // إضافة ألعاب للعرض
+            addGameCard('game1', 'PUBG Mobile');
+            addGameCard('game2', 'Genshin Impact');
+            addGameCard('game3', 'Call of Duty Mobile');
+        }
+
+        // التقاط الشاشة
+        function takeScreenshot() {
+            showNotification('تم التقاط لقطة للشاشة');
+        }
+
+        // تسجيل الشاشة
+        function startScreenRecording() {
+            showNotification('بدأ تسجيل الشاشة');
+        }
+
+        // تبديل الشريط الجانبي
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
